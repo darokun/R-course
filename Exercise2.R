@@ -27,8 +27,19 @@ age.labels <- c("20-34", "35-49", "50-64", "65-79", ">80")
 data$age.groups <- cut(data$age, c(19, 34, 49, 64, 79, Inf ), 
                       labels = age.labels)
 
+# the way they do it
+data$age.groups <- data$age
+data$age.groups[data$age.groups >19 & data$age.groups <35] <- 1
+data$age.groups[data$age.groups >34 & data$age.groups <50] <- 2
+data$age.groups[data$age.groups >49 & data$age.groups <65] <- 3
+data$age.groups[data$age.groups >64 & data$age.groups <80] <- 4
+data$age.groups[data$age.groups >80] <- 5
+data$age.groups <- as.factor(data$age.groups)
+
 # b) self-rated health
 summary(data$srhgnrl)
+# or
+plot(data$srhgnrl)
 
 
 #----
