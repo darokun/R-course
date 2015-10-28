@@ -46,6 +46,15 @@ data$diab_lft <- as.factor(data$diab_lft)
 data$jobstat <- as.factor(data$jobstat)
 data$alc_lft <- as.factor(data$alc_lft)
 data$smokstat <- as.factor(data$smokstat)
+data$phq1 <- as.factor(data$phq1)
+data$phq2 <- as.factor(data$phq2)
+data$phq3 <- as.factor(data$phq3)
+data$phq4 <- as.factor(data$phq4)
+data$phq5 <- as.factor(data$phq5)
+data$phq6 <- as.factor(data$phq6)
+data$phq7 <- as.factor(data$phq7)
+data$phq8 <- as.factor(data$phq8)
+data$phq9 <- as.factor(data$phq9)
 
 # save the new dataset as an .RData file
 #a. create data.RData file if it doesn't exist
