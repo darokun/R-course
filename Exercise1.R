@@ -69,13 +69,22 @@ attach(data)
 
 # how many women and men are there in the dataset?
 table(data$male)
-
+# to check NA's
+table(data$male, useNA="always")
+# another way of doing this:
+summary(data$male)
+ 
 # what's the mean BMI in the overall population? 
 mean(data$bmi, na.rm=TRUE)
+# another way of doing this:
+summary(data$bmi)
 
 # mean bmi for men and women?
 mean(data$bmi[data$male==TRUE], na.rm=TRUE) # men
 mean(data$bmi[data$male==FALSE], na.rm=TRUE) # women <-
+# another way of doing this:
+summary(data$bmi[data$male==TRUE]) # men
+summary(data$bmi[data$male==FALSE]) # women <-
 
 # who has highest Hg level? men or women?
 mean(data$hg[data$male==TRUE], na.rm=TRUE) # men <-
@@ -102,11 +111,25 @@ summary(data)
 # label x and y axes with corresponding variable names.
 # add main title
 plot(data$bmi, data$rr_sys,
-     pch=20, cex = 0.1,
+     pch=".",
      col="dark turquoise",
      xlab = "Body Mass Index (Kg/m*m)",
      ylab = "Systolic Blood Pressure (mmHg)",
      main = "BMI against SBP")
+
+# to get the same plot, but with different colors according to gender:
+# convert data$male to numeric, and add 1 to get values 1:2 instead of 0:1
+data$male <- as.numeric(data$male + 1)
+# create your plot, including col=col as argument (we'll get col=1 for values=1 and col=2 for values=2)
+col = sort(unique(data$male))
+plot(data$bmi, data$rr_sys,
+     pch=20, cex=0.1,
+     col=col,
+     xlab = "Body Mass Index (Kg/m*m)",
+     ylab = "Systolic Blood Pressure (mmHg)",
+     main = "BMI against SBP")
+# convert data$male back into a logical vector
+data$male <- as.logical(data$male)
 
 # plot rr_sys against diab_lft
 # what plot should be used? #boxplot
@@ -120,20 +143,24 @@ plot(data$diab_lft, data$rr_sys) # one way
 
 boxplot(rr_sys~diab_lft, data=data, # best way
         col=c("light green", "dark turquoise", "coral"),
-        names=c("No", "Pre-Diabetes", "Diabetes"),
+        names=c("None", "Pre-Diabetes", "Diabetes"),
         xlab="Diabetes Status",
         ylab="Systolic Blood Pressure",
         main="SBP and Diabetes Status",
         pch=20, cex=0.3) 
 
 # plot bmi agaist educ. Interpret
-boxplot(bmi~educ,data=data)
+boxplot(bmi~educ,data=data,
+        xlab="Educational Level",
+        ylab="BMI (Kg/m*m)",
+        main="Boxplots of Educational Level vs. BMI",
+        col=c("gray40", "gray50", "gray65", "gray80", "gray90"))
 
 # histogram of hdl-c
 # how does the distribution look like?
-hist(data$hdl, breaks = 25, main = "Histogram and density of HDLc", xlab="", ylab="")
+hist(data$hdl, breaks = 30, main = "Histogram and density of HDLc", xlab="", ylab="")
 
-hist(data$hdl, breaks = 25, prob = T, main = "Histogram and density of HDLc", xlab="", ylab="")
+hist(data$hdl, breaks = 30, prob = T, main = "Histogram and density of HDLc", xlab="", ylab="")
 lines(density(data$hdl, na.rm=T))
 
 # convert hdl to make it look normal
