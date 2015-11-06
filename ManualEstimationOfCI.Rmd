@@ -2,7 +2,9 @@
 title: "Manually estimating confidence intervals for a mean"
 author: "Daloha Rodr&iacute;guez-Molina"
 date: "November 5, 2015"
-output: html_document
+output: 
+  html_document:
+    keep_md: true
 ---
 
 I'll try to replicate Riccardo's explanation about how to derivate the way we manually calculate confidence intervals in R, from the standard normal distribution.    
