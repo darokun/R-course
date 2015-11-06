@@ -1,0 +1,256 @@
+---
+title: "Manually estimating confidence intervals for a mean"
+author: "Daloha Rodr&iacute;guez-Molina"
+date: "November 5, 2015"
+output: html_document
+---
+
+I'll try to replicate Riccardo's explanation about how to derivate the way we manually calculate confidence intervals in R, from the standard normal distribution.    
+
+All of the formulas we use from now on can be graphically understood by looking at these two graphs:   
+\
+
+
+```{r echo=FALSE,fig.width=10}
+
+par(mfrow=c(1,2), xpd=TRUE)
+
+# first plot
+cord.xl <- c(-3)
+cord.yl <- c(0)
+cord.xl <- c(cord.xl,-3) 
+cord.yl <- c(cord.yl,dnorm(-3))
+cord.xl <- c(cord.xl,-1.96,-1.96)
+cord.yl <- c(cord.yl,dnorm(-1.96),0)
+cord.xl <- c(-3,seq(-3,-1.96,0.01),-1.96) 
+cord.yl <- c(0,dnorm(seq(-3,-1.96,0.01)),0) 
+
+
+cord.xr <- c(3)
+cord.yr <- c(0)
+cord.xr <- c(cord.xr,3) 
+cord.yr <- c(cord.yr,dnorm(3))
+cord.xr <- c(cord.xr,1.96,1.96)
+cord.yr <- c(cord.yr,dnorm(1.96),0)
+cord.xr <- c(3,seq(3,1.96,-0.01),1.96) 
+cord.yr <- c(0,dnorm(seq(3,1.96,-0.01)),0) 
+
+cord.xc <- c(-1.96)
+cord.yc <- c(0)
+cord.xc <- c(cord.xc,-1.96) 
+cord.yc <- c(cord.yc,dnorm(-1.96))
+cord.xc <- c(cord.xc,1.96,1.96)
+cord.yc <- c(cord.yc,dnorm(1.96),0)
+cord.xc <- c(-1.96,seq(-1.96,1.96,0.01),1.96) 
+cord.yc <- c(0,dnorm(seq(-1.96,1.96,0.01)),0) 
+
+curve(dnorm(x,0,1),xlim=c(-3,3),main='Normal Distribution 
+for 95% CI', axes=FALSE, frame.plot=TRUE, xlab="", ylab="")
+axis(side=1, labels=FALSE)
+
+polygon(cord.xl,cord.yl,col='coral')
+polygon(cord.xr,cord.yr,col='coral')
+polygon(cord.xc,cord.yc,col=rgb(0,206,209,100,max = 255)) # col='dark turquoise' in rgb with alpha=100
+
+text(0,0.2,"95%")
+text(-2.5,0.1,"2.5%")
+text(2.5,0.1, "2.5%")
+lines(c(-2.25,-2.5), c(0.02,0.08))
+lines(c(2.25,2.5), c(0.02,0.08))
+
+text(-2, -0.05, "-1.96")
+text(2, -0.05, "+1.96")
+text(0, -0.05, "0")
+text(-2, -0.1, "qnorm(0.025)")
+text(2, -0.1, "qnorm(0.975)")
+
+# second plot
+
+curve(dnorm(x,0,1),xlim=c(-3,3),main='Normal Distribution
+for any CI', axes=FALSE, frame.plot=TRUE, xlab="", ylab="")
+axis(side=1, labels=FALSE)
+
+polygon(cord.xl,cord.yl,col='coral')
+polygon(cord.xr,cord.yr,col='coral')
+polygon(cord.xc,cord.yc,col=rgb(0,206,209,100, max = 255)) # col='dark turquoise' in rgb with alpha=100
+
+
+# 1- alpha
+text(-0.25,0.2,"1-")
+text(0.25,0.197,expression(alpha))
+
+# alpha/2 left
+text(-2.75,0.1,expression(alpha))
+text(-2.5,0.1,"/2")
+
+# alpha/2 right
+text(2.45,0.1,expression(alpha))
+text(2.65,0.1, "/2")
+
+lines(c(-2.25,-2.5), c(0.02,0.08))
+lines(c(2.25,2.5), c(0.02,0.08))
+lines(c(-2,-2),c(-0.02,-0.07))
+lines(c(2,2),c(-0.02,-0.07))
+
+text(0, -0.05, "??")
+
+# qnorm(alpha/2) left
+text(-2.55, -0.1, "qnorm(")
+text(-2, -0.1, expression(alpha))
+text(-1.75, -0.1, "/2)")
+
+# qnorm(alpha/2) right
+text(1.65, -0.1, "qnorm(1-")
+text(2.35, -0.1, expression(alpha))
+text(2.60, -0.1, "/2)")
+```
+
+
+### With known variance
+When we know the variance, we can use the standard normal distribution (Gauss distribution) and the `qnorm` function to estimate our confidence intervals.
+
+Let's assume that our point estimate value is called `z`, which in the plots above should be along the x axis somewhere in the turquoise area (1 - &alpha;). We want to construct confidence intervals around this point estimate. The confidence intervals will be located at the line between the turquoise and the orange sections.
+
+In the specific case of constructing 95% CI (left plot), we assume that our point estimate `z` will be between the lower and upper bound of the confidence interval, which in the z-scale with `mean = 0` correspond to `-1.96` and `+1.96`, respectively. For the general case (right plot), the formula is:
+
+$$\begin{equation}
+Pr\biggl[\ qnorm\left(\frac{\alpha}{2}\right)\  ???\  z\  
+???\  qnorm\left(1-\frac{\alpha}{2}\right)\ \biggl] = 1 - \alpha
+\end{equation}$$
+
+From here, we can start to mathematically derive the whole thing. First, we should remember that `z` can also be expressed as:
+
+$$\begin{equation}
+z = \frac{\overline{x}-\mu}{
+\sqrt{\frac{\sigma^2}{n}}}
+\end{equation}$$
+
+Then, we can subtitute `z` in the first equation with the value of the second equation:
+
+$$\begin{equation}
+Pr\biggl[\ qnorm\left(\frac{\alpha}{2}\right)  ???\  
+\frac{\overline{x}-\mu}{
+\sqrt{\frac{\sigma^2}{n}}}
+???\  qnorm\left(1-\frac{\alpha}{2}\right)\ \biggl] = 1 - \alpha
+\end{equation}$$
+
+
+Now we want to leave our ?? alone, so we do a little bit of algebra, and we end up with:
+
+$$\begin{equation}
+Pr\biggl[
+\overline{x} - qnorm\left(1-\frac{\alpha}{2}\right) 
+\times \sqrt{\frac{\sigma^2}{n}}  ???\
+\mu ???\  \overline{x} + qnorm\left(1-\frac{\alpha}{2}\right)
+\times \sqrt{\frac{\sigma^2}{n}}
+\biggl] = 1 - \alpha
+\end{equation}$$
+
+Finally, since the standard normal distribution is symmetric, we can collapse both sides of the inequality using a ?? sign:
+
+$$\begin{equation}
+CI_{1-\alpha/2} = \overline{x} ?? qnorm\left(1-\frac{\alpha}{2}\right) 
+\times \sqrt{\frac{\sigma^2}{n}}
+\end{equation}$$
+
+Where the lower bound results from the subtraction, and the upper bound results from the sum between the terms:
+
+$$\begin{equation}
+LowerCI_{1-\alpha/2} = \overline{x} - qnorm\left(1-\frac{\alpha}{2}\right) 
+\times \sqrt{\frac{\sigma^2}{n}}
+\end{equation}$$
+
+$$\begin{equation}
+UpperCI_{1-\alpha/2} = \overline{x} + qnorm\left(1-\frac{\alpha}{2}\right) 
+\times \sqrt{\frac{\sigma^2}{n}}
+\end{equation}$$
+
+---
+
+In `R`, we can do this by using the code in [Slide 3 - Lecture 4](http://www.en.msc-epidemiologie.med.uni-muenchen.de/download/winter-term-15__6/quantitave-methods/r-course/r-course_lecture_4_ci.pdf) of the R-course:
+
+```
+low <- mean.x - qnorm(0.975)*2/sqrt(n)
+ up <- mean.x + qnorm(0.975)*2/sqrt(n)
+```
+
+So, if we generate a random sequence from a normal distribution using the function `rnorm()`, which has `mean=1`,`sd=2` and sample size `n=100`, we can do:
+```{r}
+set.seed(42)                        # set the seed to always generate the same 'random' sequence
+x <- rnorm(100,mean=1,sd=2)                 # generate sequence and store it in x
+mean.x <- mean(x)                           # calculate mean of x and store in mean.x
+n.x <- 100                                    # sample size is 100
+sd.x <- 2                                     # standard deviation is known, and it is 2
+low <- mean.x - qnorm(0.975)*sd.x/sqrt(n.x)     # low bound of the CI
+up <- mean.x + qnorm(0.975)*sd.x/sqrt(n.x)      # high bound of the CI
+c(low,up)                                   # look at both lower and upper bound of the confidence interval
+```
+
+Look how the mean of x is within the boundaries:
+```{r}
+mean.x
+```
+
+
+### With unknown variance
+
+For the unknown variance the procedure is pretty much the same, except that now we want to use the Student's t distribution because we need to take into account **extra uncertainty** from the fact that **we don't know** what the variance is:
+
+```{r echo=FALSE}
+par(mfrow=c(1,1))
+x <- seq(-4, 4, length=100)
+hx <- dnorm(x)
+
+degf <- c(1, 30)
+colors <- c("red","black")
+labels <- c("t (df=1)", "normal")
+
+plot(x, hx, type="l", lty=1, xlab="x value", lwd=2,
+  ylab="Density", main="Comparison of t distribution
+against normal distribution")
+
+for (i in 1:1){
+  lines(x, dt(x,degf[i]), lwd=2, col=colors[i])
+}
+
+legend("topright", title="Distributions",
+  labels, lwd=2, lty=c(1, 1), col=colors)
+```
+
+See how the red line leaves more space near the extremes? This is the t-distribution accounting for uncertainty against the normal distribution (the black line).
+
+---
+
+In R, we calculate the confidence interval for unknown distribution following the instructions in [Slide 3 - Lecture 4](http://www.en.msc-epidemiologie.med.uni-muenchen.de/download/winter-term-15__6/quantitave-methods/r-course/r-course_lecture_4_ci.pdf) of the R-course. Look how we use the `qt()` function instead of the `qnorm()` function we used before:
+
+```
+low <- mean.x - qt(0.975)*2/sqrt(n)
+ up <- mean.x + qt(0.975)*2/sqrt(n)
+```
+
+So, we can use the same example as before:
+```{r}
+set.seed(42)                          # set the seed to always generate the same 'random' sequence
+x <- rnorm(100,mean=1,sd=2)                   # generate sequence and store it in x
+mean.x <- mean(x)                             # calculate mean of x and store in mean.x
+n.x <- 100                                    # sample size is 100
+sd.x <- sd(x)                                 # standard deviation is not known, so we estimate it from x
+low <- mean.x - qnorm(0.975)*sd.x/sqrt(n.x)   # low bound of the CI
+up <- mean.x + qnorm(0.975)*sd.x/sqrt(n.x)    # high bound of the CI
+c(low,up)                                     # look at both lower and upper bound of the confidence interval
+```
+
+Notice how now the confidence intervals are wider than before, and the mean of x is still within the boundaries:
+```{r}
+mean.x
+```
+
+## Conclusions:
+* Confidence intervals are interval estimates.
+* It is advised to **always** use a point estimate along with a confidence interval.
+* The most used confidence intervals are 0.90, 0.95 and 0.99.
+* 1 - $\alpha$ is called *confidence level*.
+* For a more detailed explanation on how to derive the equations, check out this [YouTube video](https://www.youtube.com/watch?v=-iYDu8flFXQ).
+
+##### End of script
+
